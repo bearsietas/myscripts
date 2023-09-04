@@ -1,0 +1,164 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Multiplayer = workspace.Multiplayer
+local TweenService = game:service'TweenService'
+local RunService = game:service'RunService'
+local InputService = game:service'UserInputService'
+local Players = game:service'Players'
+local player = Players.LocalPlayer
+local char = player.Character
+local vals = {
+    ["WS"] = 20,
+    ["JP"] = 50,
+    ["InfJump"] = false,
+    ["CanJump"] = true,
+    ["Player"] = nil,
+    ["SpoofPos"] = false,
+}
+
+function findPlayer(name)
+    for i, plr in pairs(Players:GetPlayers()) do
+        if string.match(plr.Name, name) or string.match(plr.DisplayName, name) then
+            return plr
+        end
+    end
+
+    return nil
+end
+
+local Window = Rayfield:CreateWindow({
+    Name = "Bear Hub - FE2",
+    LoadingTitle = "Bear Hub",
+    LoadingSubtitle = "by Bearsie",
+    ConfigurationSaving = {
+       Enabled = true,
+       FolderName = "BearHub",
+       FileName = "FE2"
+    },
+    KeySystem = false,
+})
+
+local PlayerTab = Window:CreateTab("Player", 0)
+local TeleportationTab = Window:CreateTab("Teleportation", 0)
+
+function FloatTo(Time, Destination)
+    local Info = TweenInfo.new(Time, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut)
+    local Tween = TweenService:Create(char.HumanoidRootPart, Info, {CFrame = Destination})
+    char.HumanoidRootPart.Anchored = true
+    Tween:Play()
+    Tween.Completed:Wait()
+    char.HumanoidRootPart.Anchored = false
+end
+
+PlayerTab:CreateSlider({
+    Name = "WalkSpeed",
+    Range = {20, 50},
+    Increment = 1,
+    CurrentValue = 20,
+    Flag = "Walkspeed",
+    Callback = function(Value)
+        vals["WS"] = Value
+    end,
+})
+
+PlayerTab:CreateSlider({
+    Name = "JumpPower",
+    Range = {50, 200},
+    Increment = 1,
+    CurrentValue = 50,
+    Flag = "JumpPower",
+    Callback = function(Value)
+        vals["JP"] = Value
+    end,
+})
+
+PlayerTab:CreateToggle({
+    Name = "Infinite Jump",
+    CurrentValue = false,
+    Flag = "InfJump",
+    Callback = function(Value)
+        vals["InfJump"] = Value
+    end,
+})
+
+PlayerTab:CreateToggle({
+    Name = "Spoof Position",
+    CurrentValue = false,
+    Flag = "SpoofPos",
+    Callback = function(Value)
+        vals["SpoofPos"] = Value
+    end,
+})
+
+PlayerTab:CreateButton({
+    Name = "Building Tools",
+    Callback = function()
+        backpack = player.Backpack
+        hammer = Instance.new("HopperBin")
+        hammer.Name = "Hammer"
+        hammer.BinType = 4
+        hammer.Parent = backpack
+        cloneTool = Instance.new("HopperBin")
+        cloneTool.Name = "Clone"
+        cloneTool.BinType = 3
+        cloneTool.Parent = backpack
+        grabTool = Instance.new("HopperBin")
+        grabTool.Name = "Grab"
+        grabTool.BinType = 2
+        grabTool.Parent = backpack
+    end,
+})
+
+TeleportationTab:CreateInput({
+    Name = "Player Name",
+    PlaceholderText = "",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Text)
+        vals["Player"] = findPlayer(Text)
+    end,
+})
+
+TeleportationTab:CreateButton({
+    Name = "Teleport To Player",
+    Callback = function()
+        local Destination = vals["Player"].Character.HumanoidRootPart.CFrame
+        FloatTo(5, Destination)
+    end,
+})
+
+InputService.JumpRequest:connect(function()
+    if vals["InfJump"] and vals["CanJump"] then
+        char.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        vals["CanJump"] = false
+        wait(0.25)
+        vals["CanJump"] = true
+    end
+end)
+
+RunService.Stepped:connect(function()
+    for _, child in pairs(char:GetDescendants()) do
+        if child:IsA("BasePart") then
+            child.CanCollide = not vals["SpoofPos"]
+        end
+    end
+
+    if char.Humanoid.WalkSpeed ~= 0 then
+        char.Humanoid.WalkSpeed = vals["WS"]
+    end
+
+    char.Humanoid.JumpPower = vals["JP"]
+end)
+
+local mt = getrawmetatable(game)
+setreadonly(mt, false)
+
+local old_index = mt.__index
+
+mt.__index = function(name, property)
+    if tostring(name) == "HumanoidRootPart" and vals["SpoofPos"] then
+        if tostring(property) == "Vector3" then
+            return Vector3.new(10000, 10000, 10000)
+        end
+    end
+
+    return old_index(name, property)
+end
