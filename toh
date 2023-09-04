@@ -1,0 +1,144 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local TweenService = game:service'TweenService'
+local TeleportService = game:service'TeleportService'
+local RunService = game:service'RunService'
+local Players = game:service'Players'
+local player = Players.LocalPlayer
+local char = player.Character
+local vals = {
+    ["WS"] = 20,
+    ["JP"] = 50,
+    ["Player"] = nil,
+    ["SpoofPos"] = false,
+}
+
+function findPlayer(name)
+    for i, plr in pairs(Players:GetPlayers()) do
+        if string.match(plr.Name, name) or string.match(plr.DisplayName, name) then
+            return plr
+        end
+    end
+
+    return nil
+end
+
+local Window = Rayfield:CreateWindow({
+    Name = "Bear Hub - Tower of Hell",
+    LoadingTitle = "Bear Hub",
+    LoadingSubtitle = "by Bearsie",
+    ConfigurationSaving = {
+       Enabled = true,
+       FolderName = "BearHub",
+       FileName = "TOH"
+    },
+    KeySystem = false,
+})
+
+local PlayerTab = Window:CreateTab("Player", 0)
+local TeleportationTab = Window:CreateTab("Teleportation", 0)
+
+function FloatTo(Time, Destination)
+    local Info = TweenInfo.new(Time, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut)
+    local Tween = TweenService:Create(char.PrimaryPart, Info, {CFrame = Destination})
+    char.PrimaryPart.Anchored = true
+    Tween:Play()
+    Tween.Completed:Wait()
+    char.PrimaryPart.Anchored = false
+end
+
+PlayerTab:CreateSlider({
+    Name = "WalkSpeed",
+    Range = {16, 50},
+    Increment = 1,
+    CurrentValue = 16,
+    Flag = "Walkspeed",
+    Callback = function(Value)
+        vals["WS"] = Value
+    end,
+})
+
+PlayerTab:CreateSlider({
+    Name = "JumpPower",
+    Range = {50, 200},
+    Increment = 1,
+    CurrentValue = 50,
+    Flag = "JumpPower",
+    Callback = function(Value)
+        vals["JP"] = Value
+    end,
+})
+
+PlayerTab:CreateToggle({
+    Name = "Spoof Position",
+    CurrentValue = false,
+    Flag = "SpoofPos",
+    Callback = function(Value)
+        vals["SpoofPos"] = Value
+    end,
+})
+
+PlayerTab:CreateButton({
+    Name = "Rejoin",
+    Callback = function()
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+    end,
+})
+
+TeleportationTab:CreateInput({
+    Name = "Player Name",
+    PlaceholderText = "",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Text)
+        vals["Player"] = findPlayer(Text)
+    end,
+})
+
+TeleportationTab:CreateButton({
+    Name = "Teleport To Player",
+    Callback = function()
+        local Destination = vals["Player"].Character.HumanoidRootPart.CFrame
+        FloatTo(5, Destination)
+    end,
+})
+
+TeleportationTab:CreateButton({
+    Name = "Teleport To End",
+    Callback = function()
+        local Destination = workspace.tower.finishes.Finish.CFrame
+        FloatTo(5, Destination)
+    end,
+})
+
+RunService.Stepped:connect(function()
+    for _, child in pairs(char:GetDescendants()) do
+        if child:IsA("BasePart") then
+            child.CanCollide = not vals["SpoofPos"]
+        end
+    end
+
+    char.Humanoid.WalkSpeed = vals["WS"]
+    char.Humanoid.JumpPower = vals["JP"]
+end)
+
+local mt = getrawmetatable(game)
+setreadonly(mt, false)
+
+local old_index = mt.__index
+
+mt.__index = function(name, property)
+    if tostring(name) == "HumanoidRootPart" and vals["SpoofPos"] then
+        if tostring(property) == "Vector3" then
+            return Vector3.new(0, 0, 0)
+        end
+    end
+
+    if tostring(name) == "Humanoid" then
+        if tostring(property) == "WalkSpeed" then
+            return 16
+        elseif tostring(property) == "JumpPower" then
+            return 50
+        end
+    end
+
+    return old_index(name, property)
+end
